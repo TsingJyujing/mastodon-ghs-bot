@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "ghs-mastodon-bot"
+version = "0.1.0"
+description = ""
+authors = ["Tsing Jyujing"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+tsingspider = {git = "https://github.com/TsingJyujing/DataSpider.git"}
+m3u8 = {git = "https://github.com/globocom/m3u8.git"}
+Pillow = "^8.0.1"
+pymongo = "^3.11.0"
+pycryptodomex = "^3.9.8"
+"Mastodon.py" = "^1.5.1"
+minio = "^6.0.0"
+bencodepy = "^0.9.5"
+celery = "^5.0.1"
+numpy = "^1.19.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
