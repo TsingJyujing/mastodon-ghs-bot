@@ -40,6 +40,8 @@ export MASTODON_SECRET=xxxx
 export MASTODON_TOKEN=xxxx
 export MASTODON_HOST=https://xxxx.xxxx.xxx
 export S3_ENDPOINT=xxx.xxx.xxx
+export S3_ACCESS_KEY=xxx
+export S3_SECRET_KEY=xxx
 
 poetry run python mastdon_robot.py
 ```

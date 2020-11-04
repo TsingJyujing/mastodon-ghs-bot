@@ -1,16 +1,15 @@
-import os
 import random
 from typing import Iterable
 from urllib.parse import urlparse, parse_qs
 
 import pymongo
-from tsing_spider.util.pyurllib import http_get
 
 from ghs.channels.base import BaseChannel, PushContent
+from ghs.utils.storage import create_s3_client, create_mongodb_client
 
-mongodb_client = pymongo.MongoClient(os.environ["MONGODB_URI"])
+mongodb_client = create_mongodb_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_xart")
-s3_endpoint = os.environ["S3_ENDPOINT"]
+s3_client = create_s3_client()
 
 
 def process_magnet_uri(magnet_uri: str):
@@ -42,8 +41,8 @@ class XartImageChannel(BaseChannel):
         _id = doc["_id"]
         status = "《{}》".format(doc["title"])
         medias = [
-            http_get(f"https://{s3_endpoint}/xart/images/{str(_id)}/{i}.jpg")
-            for i in range(len(doc["image_urls"]))
+            s3_client.get_object("xart", obj.object_name).data
+            for obj in s3_client.list_objects("xart", f"images/{str(_id)}/")
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
 
@@ -79,7 +78,9 @@ class XartVideoChannel(BaseChannel):
         status = "《{}》".format(
             doc["title"],
         )
-        medias = [http_get(f"https://{s3_endpoint}/xart/videos/{str(_id)}/video.mp4")]
+        medias = [
+            s3_client.get_object("xart", f"videos/{str(_id)}/video.mp4").data
+        ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
         return [
             PushContent(

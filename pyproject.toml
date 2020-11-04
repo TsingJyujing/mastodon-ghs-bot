@@ -16,6 +16,8 @@ minio = "^6.0.0"
 bencodepy = "^0.9.5"
 celery = "^5.0.1"
 numpy = "^1.19.3"
+click = "^7.1.2"
+tqdm = "^4.51.0"
 
 [tool.poetry.dev-dependencies]
 

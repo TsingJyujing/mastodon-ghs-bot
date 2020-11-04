@@ -6,6 +6,7 @@ import numpy
 from mastodon import Mastodon
 
 from ghs.channels.jav import JAVChannel
+from ghs.channels.sex8 import Sex8ImageChannel
 from ghs.channels.xart import XartImageChannel, XartVideoChannel
 
 log = logging.getLogger(__file__)
@@ -21,6 +22,8 @@ channel_weight = [
     (JAVChannel("h-manga", "漫画", candidate_count=candidate_count), 0.5),
     (XartVideoChannel(candidate_count=candidate_count), 4),
     (XartImageChannel(candidate_count=candidate_count), 3),
+    (Sex8ImageChannel(157, "网友自拍", candidate_count=candidate_count), 3),
+    (Sex8ImageChannel(158, "网友自拍", candidate_count=candidate_count), 3),
 ]
 
 
@@ -31,7 +34,7 @@ def publish_toot_as_public() -> bool:
     """
     t = datetime.datetime.now()
     ft = t.hour + t.minute / 60 + t.second / 3600.0
-    return (17.9 < ft < 18.1) or (19.9 < ft < 20.1)
+    return 18.9 < ft < 20.6
 
 
 def push_recommendations():
@@ -50,7 +53,7 @@ def push_recommendations():
     ws = numpy.array([w for c, w in channel_weight])
     ws = ws / ws.sum()
     selected_channel = channel_weight[numpy.random.choice(len(channel_weight), p=ws)][0]
-    for i, content in enumerate(selected_channel.create_contents()):
+    for i, content in enumerate(selected_channel.create_contents()[:4]):
         if i == 0:
             content.push(mastodon, publish_toot_as_public())
         else:

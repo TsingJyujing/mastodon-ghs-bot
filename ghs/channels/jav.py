@@ -1,16 +1,16 @@
-import os
 import random
 from typing import Iterable
 from urllib.parse import urlparse, parse_qs
 
 import pymongo
-from tsing_spider.util.pyurllib import http_get
 
 from ghs.channels.base import BaseChannel, PushContent
+from ghs.utils.storage import create_mongodb_client, create_s3_client
 
-mongodb_client = pymongo.MongoClient(os.environ["MONGODB_URI"])
+s3_client = create_s3_client()
+mongodb_client = create_mongodb_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_jav")
-s3_endpoint = os.environ["S3_ENDPOINT"]
+
 
 def process_magnet_uri(magnet_uri: str):
     elements = []
@@ -46,7 +46,9 @@ class JAVChannel(BaseChannel):
             " ".join("#{}".format(tag.replace(" ", "")) for tag in doc["tags"]),
             "\n".join(process_magnet_uri(uri) for uri in doc["magnet_uris"])
         )
-        medias = [http_get(f"https://{s3_endpoint}/jav/images/{_id}")]
+        medias = [
+            s3_client.get_object("jav", f"images/{_id}").data
+        ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
         return [
             PushContent(
