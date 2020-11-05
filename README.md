@@ -48,7 +48,6 @@ poetry run python mastdon_robot.py
 
 ## TODOs
 
-- Unifying spider tasks
 - Using celery to control publish schedule.
 - Receiving request from other users
     - Maybe need SQL to support it.

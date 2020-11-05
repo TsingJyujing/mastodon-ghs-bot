@@ -23,7 +23,7 @@ class PushContent:
         self.text = text
         self.title = title
 
-    def push(self, m: Mastodon, public: bool):
+    def push(self, m: Mastodon, visibility: str, in_reply_to_id:int=None):
         media_id_list = []
         for media_content in self.medias:
             with NamedTemporaryFile() as fp:
@@ -31,13 +31,15 @@ class PushContent:
                 fp.seek(0)
                 media_upload_resp = m.media_post(fp.name)
                 media_id_list.append(media_upload_resp["id"])
-        m.status_post(
+        return m.status_post(
             status=self.text,
             media_ids=media_id_list,
             sensitive=True,
             spoiler_text=f"[ #NSFW ][{self.title}]",
-            visibility="public" if public else "unlisted"
+            visibility=visibility,
+            in_reply_to_id=in_reply_to_id
         )
+
 
 
 class BaseChannel(ABC):

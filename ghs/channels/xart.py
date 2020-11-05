@@ -1,4 +1,5 @@
 import random
+from math import ceil
 from typing import Iterable
 from urllib.parse import urlparse, parse_qs
 
@@ -46,7 +47,7 @@ class XartImageChannel(BaseChannel):
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
 
-        batches = len(medias) // 4 + 1
+        batches = ceil(len(medias) / 4.0)
         return [
             PushContent(
                 title="Xart图片集",

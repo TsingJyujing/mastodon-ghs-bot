@@ -1,4 +1,5 @@
 import random
+from math import ceil
 from typing import Iterable
 
 import pymongo
@@ -38,7 +39,7 @@ class Sex8ImageChannel(BaseChannel):
             for obj in s3_client.list_objects("sex8", f"{str(_id)}/images/")
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
-        batches = len(medias) // 4 + 1
+        batches = ceil(len(medias) / 4.0)
         return [
             PushContent(
                 title=f"{self.title} {i + 1}/{batches}",

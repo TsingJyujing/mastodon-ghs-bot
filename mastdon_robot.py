@@ -7,7 +7,7 @@ from mastodon import Mastodon
 
 from ghs.channels.jav import JAVChannel
 from ghs.channels.sex8 import Sex8ImageChannel
-from ghs.channels.xart import XartImageChannel, XartVideoChannel
+from ghs.channels.xart import XartVideoChannel, XartImageChannel
 
 log = logging.getLogger(__file__)
 
@@ -53,11 +53,18 @@ def push_recommendations():
     ws = numpy.array([w for c, w in channel_weight])
     ws = ws / ws.sum()
     selected_channel = channel_weight[numpy.random.choice(len(channel_weight), p=ws)][0]
+    in_reply_to_id = None
     for i, content in enumerate(selected_channel.create_contents()[:4]):
         if i == 0:
-            content.push(mastodon, publish_toot_as_public())
+            if publish_toot_as_public():
+                visibility = "public"
+            else:
+                visibility = "unlisted"
         else:
-            content.push(mastodon, False)
+            visibility = "unlisted"
+        push_result = content.push(mastodon, visibility, in_reply_to_id)
+        if in_reply_to_id is None:
+            in_reply_to_id = push_result["id"]
 
 
 if __name__ == '__main__':
