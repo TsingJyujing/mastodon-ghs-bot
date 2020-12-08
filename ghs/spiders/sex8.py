@@ -11,13 +11,12 @@ from tsing_spider.porn.sex8cc import ForumPage, ForumThread
 from tsing_spider.util.hls import M3U8Downloader
 
 from ghs.spiders.base import BaseSpiderTaskGenerator
-from ghs.utils.storage import create_s3_client, url_to_s3, create_mongodb_client
+from ghs.utils.storage import create_s3_client, url_to_s3, create_mongodb_client, bucket_name, put_json
 
 log = logging.getLogger(__file__)
 
 mongodb_client = create_mongodb_client()
 s3_client = create_s3_client()
-s3_bucket = "sex8"
 collection = mongodb_client.get_database("resman").get_collection("spider_sex8")
 
 
@@ -30,8 +29,6 @@ def initialize():
     collection.create_index([("published", pymongo.ASCENDING)])
     collection.create_index([("url", pymongo.ASCENDING)])
     collection.create_index([("forum_id", pymongo.ASCENDING)])
-    if not s3_client.bucket_exists(s3_bucket):
-        s3_client.make_bucket(s3_bucket)
 
 
 def thread_item_processor(forum_thread: ForumThread, forum_id: int):
@@ -43,24 +40,27 @@ def thread_item_processor(forum_thread: ForumThread, forum_id: int):
             data["forum_id"] = forum_id
             data["published"] = False
 
+            image_wrote_count = 0
             for i, image_url in enumerate(forum_thread.subject.image_list):
                 log.debug(f"Downloading image {i} for page {forum_thread.url}")
                 url_path = urlparse(image_url).path
                 mime_type = mimetypes.guess_type(url_path)[0]
                 file_suffix = url_path.split(".")[-1]
-                s3_path = f"{str(_id)}/images/{i}.{file_suffix}"
-                url_to_s3(
-                    s3_client,
-                    image_url,
-                    s3_bucket,
-                    s3_path,
-                    headers={"Referer": forum_thread.url},
-                    content_type=mime_type,
-                    ignore_4xx=True
-                )
+                s3_path = f"sex8/{str(_id)}/images/{i}.{file_suffix}"
+                if url_to_s3(
+                        s3_client,
+                        image_url,
+                        s3_path,
+                        headers={"Referer": forum_thread.url},
+                        content_type=mime_type,
+                        ignore_4xx=True
+                ):
+                    image_wrote_count += 1
+            data["all_images_wrote"] = image_wrote_count >= len(forum_thread.subject.image_list)
+            # FIXME save as separated files directly
             for i, video_url in enumerate(forum_thread.m3u8_video_links):
                 log.info(f"Downloading video {i} for page {forum_thread.url}")
-                s3_path = f"{str(_id)}/videos/{i}.ts"
+                s3_path = f"sex8/{str(_id)}/videos/{i}.ts"
                 with TemporaryFile() as fp:
                     total_size = 0
                     for bs in M3U8Downloader(video_url).data_stream():
@@ -68,12 +68,13 @@ def thread_item_processor(forum_thread: ForumThread, forum_id: int):
                         fp.write(bs)
                     fp.seek(0)
                     s3_client.put_object(
-                        bucket_name=s3_bucket,
+                        bucket_name=bucket_name,
                         object_name=s3_path,
                         data=fp,
                         length=total_size,
                         content_type="video/MP2T",
                     )
+            put_json(s3_client, data, f"sex8/{str(_id)}/meta.json")
             collection.insert_one(data)
             log.info(f"{forum_thread.url} already processed successfully.")
 

@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 import pymongo
 
 from ghs.channels.base import BaseChannel, PushContent
-from ghs.utils.storage import create_mongodb_client, create_s3_client
+from ghs.utils.storage import create_mongodb_client, create_s3_client, bucket_name
 
 s3_client = create_s3_client()
 mongodb_client = create_mongodb_client()
@@ -47,7 +47,7 @@ class JAVChannel(BaseChannel):
             "\n".join(process_magnet_uri(uri) for uri in doc["magnet_uris"])
         )
         medias = [
-            s3_client.get_object("jav", f"images/{_id}").data
+            s3_client.get_object(bucket_name, f"jav/images/{_id}").data
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
         return [

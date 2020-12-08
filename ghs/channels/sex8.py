@@ -5,7 +5,7 @@ from typing import Iterable
 import pymongo
 
 from ghs.channels.base import BaseChannel, PushContent
-from ghs.utils.storage import create_mongodb_client, create_s3_client
+from ghs.utils.storage import create_mongodb_client, create_s3_client, bucket_name
 
 mongodb_client = create_mongodb_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_sex8")
@@ -35,8 +35,8 @@ class Sex8ImageChannel(BaseChannel):
         # Create Status and medias
         status = "{}".format(doc["title"])
         medias = [
-            s3_client.get_object("sex8", obj.object_name).data
-            for obj in s3_client.list_objects("sex8", f"{str(_id)}/images/")
+            s3_client.get_object(bucket_name, obj.object_name).data
+            for obj in s3_client.list_objects(bucket_name, f"sex8/{str(_id)}/images/")
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
         batches = ceil(len(medias) / 4.0)

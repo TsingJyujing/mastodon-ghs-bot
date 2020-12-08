@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Iterator, Callable
 from urllib.parse import urlparse
 
@@ -10,7 +9,7 @@ from tsing_spider.porn.jav import JAV_CATEGORIES, JAV_HOST, JAV_H_HOST, JAV_H_CA
 
 from ghs.spiders.base import BaseSpiderTaskGenerator
 from ghs.utils import create_magnet_uri
-from ghs.utils.storage import create_s3_client, put_binary_data, create_mongodb_client
+from ghs.utils.storage import create_s3_client, put_binary_data, create_mongodb_client, put_json
 
 log = logging.getLogger(__file__)
 urllib3.disable_warnings()
@@ -29,8 +28,6 @@ def initialize():
     collection.create_index([("time", pymongo.DESCENDING)])
     collection.create_index([("published", pymongo.ASCENDING)])
     collection.create_index([("time", pymongo.ASCENDING)])
-    if not s3_client.bucket_exists("jav"):
-        s3_client.make_bucket("jav")
 
 
 def jav_item_processor(item: JavItem):
@@ -42,17 +39,17 @@ def jav_item_processor(item: JavItem):
         _id = f"{category}/{resource_id}"
         if collection.find_one({"_id": _id}) is None:
             log.info(f"Processing {item.url}.")
-            put_binary_data(s3_client, item.image, "jav", f"images/{_id}")
+            put_binary_data(s3_client, item.image, f"jav/images/{_id}")
             magnet_uris = []
             for i, torrent_binary_data in enumerate(item.torrents):
                 magnet_uris.append(create_magnet_uri(torrent_binary_data))
                 put_binary_data(
                     s3_client,
                     torrent_binary_data,
-                    "jav", f"torrents/{_id}/{i}.torrent",
+                    f"jav/torrents/{_id}/{i}.torrent",
                     content_type="application/x-bittorrent"
                 )
-            collection.insert_one(dict(
+            content_data = dict(
                 _id=_id,
                 category=category,
                 resource_id=resource_id,
@@ -63,7 +60,9 @@ def jav_item_processor(item: JavItem):
                 tags=item.tags,
                 time=item.time,
                 published=False
-            ))
+            )
+            put_json(s3_client, content_data, f"jav/torrents/{_id}/meta.json")
+            collection.insert_one(content_data)
             log.info(f"{item.url} already processed successfully.")
 
     return wrapper

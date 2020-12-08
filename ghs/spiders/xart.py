@@ -18,7 +18,7 @@ from tsing_spider.porn.xarthunter import (
 from tsing_spider.util import http_get
 
 from ghs.spiders.base import BaseSpiderTaskGenerator
-from ghs.utils.storage import create_s3_client, create_mongodb_client
+from ghs.utils.storage import create_s3_client, create_mongodb_client, bucket_name, put_json
 
 log = logging.getLogger(__file__)
 item_thread_pool = ThreadPoolExecutor(max_workers=8)
@@ -27,7 +27,6 @@ mongodb_client = create_mongodb_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_xart")
 
 urllib3.disable_warnings()
-s3_bucket = "xart"
 s3_client = create_s3_client()
 
 
@@ -40,8 +39,6 @@ def initialize():
     collection.create_index([("published", pymongo.ASCENDING)])
     collection.create_index([("type", pymongo.ASCENDING)])
     collection.create_index([("url", pymongo.ASCENDING)])
-    if not s3_client.bucket_exists(s3_bucket):
-        s3_client.make_bucket(s3_bucket)
 
 
 def get_item_processor(item: XarthunterItemPage):
@@ -79,11 +76,11 @@ def image_item_processor(item: XarthunterItemPage):
             url_path = urlparse(image_url).path
             mime_type = mimetypes.guess_type(url_path)[0]
             file_suffix = url_path.split(".")[-1]
-            s3_path = f"images/{str(_id)}/{i}.{file_suffix}"
+            s3_path = f"xart/images/{str(_id)}/{i}.{file_suffix}"
             s3_path_list.append(s3_path)
             with BytesIO(image_data) as fp:
                 s3_client.put_object(
-                    bucket_name=s3_bucket,
+                    bucket_name=bucket_name,
                     object_name=s3_path,
                     data=fp,
                     length=len(image_data),
@@ -98,6 +95,7 @@ def image_item_processor(item: XarthunterItemPage):
     doc["url"] = item.url
     doc["type"] = "image"
     doc["published"] = False
+    put_json(s3_client, doc, f"xart/images/{str(_id)}/meta.json")
     collection.insert_one(doc)
     log.info(f"Image {item.url} written.")
 
@@ -115,8 +113,8 @@ def video_item_processor(item: XarthunterItemPage):
     video_data = http_get(item.mp4_video_url, headers={"Referer": item.url})
     with BytesIO(video_data) as fp:
         s3_client.put_object(
-            bucket_name=s3_bucket,
-            object_name=f"videos/{str(_id)}/video.mp4",
+            bucket_name=bucket_name,
+            object_name=f"xart/videos/{str(_id)}/video.mp4",
             data=fp,
             length=len(video_data)
         )
@@ -124,8 +122,8 @@ def video_item_processor(item: XarthunterItemPage):
         preview_image_data = http_get(item.preview_image_url, headers={"Referer": item.url})
         with BytesIO(preview_image_data) as fp:
             s3_client.put_object(
-                bucket_name=s3_bucket,
-                object_name=f"videos/{str(_id)}/preview.jpg",
+                bucket_name=bucket_name,
+                object_name=f"xart/videos/{str(_id)}/preview.jpg",
                 data=fp,
                 length=len(preview_image_data),
                 content_type="image/jpeg"
@@ -134,6 +132,7 @@ def video_item_processor(item: XarthunterItemPage):
     doc["url"] = item.url
     doc["type"] = "video"
     doc["published"] = False
+    put_json(s3_client, doc, f"xart/videos/{str(_id)}/meta.json")
     collection.insert_one(doc)
     log.info(f"Video {item.url} written.")
 

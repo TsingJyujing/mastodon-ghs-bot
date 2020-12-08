@@ -23,7 +23,7 @@ class PushContent:
         self.text = text
         self.title = title
 
-    def push(self, m: Mastodon, visibility: str, in_reply_to_id:int=None):
+    def push(self, m: Mastodon, visibility: str, in_reply_to_id: int = None):
         media_id_list = []
         for media_content in self.medias:
             with NamedTemporaryFile() as fp:
@@ -41,10 +41,10 @@ class PushContent:
         )
 
 
-
 class BaseChannel(ABC):
     """
     The channel to create the content
     """
+
     @abstractmethod
     def create_contents(self) -> Iterable[PushContent]: pass

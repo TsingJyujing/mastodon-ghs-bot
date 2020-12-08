@@ -34,7 +34,7 @@ def publish_toot_as_public() -> bool:
     """
     t = datetime.datetime.now()
     ft = t.hour + t.minute / 60 + t.second / 3600.0
-    return 18.9 < ft < 20.6
+    return 17.9 < ft < 23.6
 
 
 def push_recommendations():
@@ -43,8 +43,6 @@ def push_recommendations():
     :return:
     """
     mastodon = Mastodon(
-        client_id=os.environ["MASTODON_ID"],
-        client_secret=os.environ["MASTODON_SECRET"],
         access_token=os.environ["MASTODON_TOKEN"],
         api_base_url=os.environ["MASTODON_HOST"],
     )

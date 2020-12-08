@@ -6,7 +6,7 @@ from urllib.parse import urlparse, parse_qs
 import pymongo
 
 from ghs.channels.base import BaseChannel, PushContent
-from ghs.utils.storage import create_s3_client, create_mongodb_client
+from ghs.utils.storage import create_s3_client, create_mongodb_client, bucket_name
 
 mongodb_client = create_mongodb_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_xart")
@@ -42,8 +42,8 @@ class XartImageChannel(BaseChannel):
         _id = doc["_id"]
         status = "《{}》".format(doc["title"])
         medias = [
-            s3_client.get_object("xart", obj.object_name).data
-            for obj in s3_client.list_objects("xart", f"images/{str(_id)}/")
+            s3_client.get_object(bucket_name, obj.object_name).data
+            for obj in s3_client.list_objects(bucket_name, f"xart/images/{str(_id)}/")
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
 
@@ -80,7 +80,7 @@ class XartVideoChannel(BaseChannel):
             doc["title"],
         )
         medias = [
-            s3_client.get_object("xart", f"videos/{str(_id)}/video.mp4").data
+            s3_client.get_object(bucket_name, f"xart/videos/{str(_id)}/video.mp4").data
         ]
         collection.update_one({"_id": _id}, update={"$set": {"published": True}})
         return [
