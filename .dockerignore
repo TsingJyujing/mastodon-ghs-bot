@@ -228,5 +228,3 @@ ipython_config.py
 /dev/
 .idea/
 cronjob_*.sh
-poetry.lock
-pyproject.toml
