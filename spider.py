@@ -1,42 +1,32 @@
 import logging
 from itertools import chain
 
+import click
 import urllib3
 
 from ghs.spiders.base import run_generators
 from ghs.spiders.jav import JavSpiderTaskGenerator
-from ghs.spiders.sex8 import Sex8SpiderTaskGenerator
+from ghs.spiders.sex8 import Sex8SpiderTaskGenerator, IMAGE_THREADS, VIDEO_THREADS
 from ghs.spiders.xart import XartSpiderTaskGenerator
-import click
 
 
 @click.command()
-@click.option("--sex8-pages", default=20, help="Page count of sex8cc")
+@click.option("--sex8-image-pages", default=20, help="Page count of sex8cc images")
+@click.option("--sex8-video-pages", default=5, help="Page count of sex8cc video")
 @click.option("--xart-pages", default=5, help="Page count of xart")
 @click.option("--jav-pages", default=5, help="Page count of JAV")
 def main(
-        sex8_pages: int,
+        sex8_image_pages: int,
+        sex8_video_pages: int,
         xart_pages: int,
         jav_pages: int,
 ):
     run_generators(
         list(chain(
             JavSpiderTaskGenerator.generate_all_generators(jav_pages),
-            (
-                Sex8SpiderTaskGenerator(fid, mpi)
-                for fid, mpi in {
-                # IMAGES
-                157: sex8_pages,  # 生活自拍
-                158: sex8_pages,  # 性爱自拍
-                11: sex8_pages,  # 亚洲图区
-                # # NOVELS
-                # 279: 15,  # 253,
-                # 858: 15,  # 556,
-                # # VIDEOS
-                # 904: 15,  # 440
-                # 181: 15,  # 4081
-            }.items()
-            ), [
+            [Sex8SpiderTaskGenerator(fid, sex8_image_pages) for fid in IMAGE_THREADS],
+            [Sex8SpiderTaskGenerator(fid, sex8_video_pages) for fid in VIDEO_THREADS],
+            [
                 XartSpiderTaskGenerator("image", xart_pages),
                 XartSpiderTaskGenerator("video", xart_pages),
             ]

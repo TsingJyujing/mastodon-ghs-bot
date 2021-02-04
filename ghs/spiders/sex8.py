@@ -1,9 +1,11 @@
 import logging
 import mimetypes
-from tempfile import TemporaryFile
+import os
+from tempfile import TemporaryDirectory
 from typing import Iterator, Callable
 from urllib.parse import urlparse
 
+import ffmpeg
 import pymongo
 from bson import ObjectId
 from requests import HTTPError
@@ -18,6 +20,10 @@ log = logging.getLogger(__file__)
 mongodb_client = create_mongodb_client()
 s3_client = create_s3_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_sex8")
+
+IMAGE_THREADS = [157, 158, 11]
+NOVEL_THREADS = [279, 858]
+VIDEO_THREADS = [904, 181]
 
 
 def initialize():
@@ -57,22 +63,24 @@ def thread_item_processor(forum_thread: ForumThread, forum_id: int):
                 ):
                     image_wrote_count += 1
             data["all_images_wrote"] = image_wrote_count >= len(forum_thread.subject.image_list)
-            # FIXME save as separated files directly
             for i, video_url in enumerate(forum_thread.m3u8_video_links):
                 log.info(f"Downloading video {i} for page {forum_thread.url}")
-                s3_path = f"sex8/{str(_id)}/videos/{i}.ts"
-                with TemporaryFile() as fp:
-                    total_size = 0
-                    for bs in M3U8Downloader(video_url).data_stream():
-                        total_size += len(bs)
-                        fp.write(bs)
-                    fp.seek(0)
-                    s3_client.put_object(
+                s3_path = f"sex8/{str(_id)}/videos/{i}.mp4"
+                with TemporaryDirectory() as td:
+                    ts_file = os.path.join(td, "video.ts")
+                    mp4_file = os.path.join(td, "video.mp4")
+                    M3U8Downloader(video_url).download_to(ts_file)
+                    ffmpeg.input(ts_file).output(
+                        mp4_file,
+                        vcodec="copy",
+                        acodec="copy",
+                        format="mp4"
+                    ).run(overwrite_output=True)
+                    s3_client.fput_object(
                         bucket_name=bucket_name,
                         object_name=s3_path,
-                        data=fp,
-                        length=total_size,
-                        content_type="video/MP2T",
+                        file_path=mp4_file,
+                        content_type="video/mp4"
                     )
             put_json(s3_client, data, f"sex8/{str(_id)}/meta.json")
             collection.insert_one(data)
