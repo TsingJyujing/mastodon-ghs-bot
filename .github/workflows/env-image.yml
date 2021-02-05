@@ -28,3 +28,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: tsingjyujing/ghs-mastodon-bot:latest
+          cache-from: type=registry,ref=tsingjyujing/ghs-mastodon-bot:latest
