@@ -16,12 +16,14 @@ from ghs.spiders.xart import XartSpiderTaskGenerator
 @click.option("--sex8-novel-pages", default=10, help="Page count of sex8cc novel")
 @click.option("--xart-pages", default=5, help="Page count of xart")
 @click.option("--jav-pages", default=5, help="Page count of JAV")
+@click.option("--workers", default=12, help="Workers count")
 def main(
         sex8_image_pages: int,
         sex8_video_pages: int,
         sex8_novel_pages: int,
         xart_pages: int,
         jav_pages: int,
+        workers: int,
 ):
     run_generators(
         list(chain(
@@ -34,7 +36,7 @@ def main(
                 XartSpiderTaskGenerator("video", xart_pages),
             ]
         )),
-        item_pool_workers=12
+        item_pool_workers=workers
     )
 
 

@@ -1,8 +1,10 @@
 import json
+import logging
 import os
 from mimetypes import guess_type
 from urllib.parse import urlparse, unquote_plus
 
+import urllib3
 from bson.json_util import dumps
 from resman_client.client import ResmanClient, DefaultS3Image, ImageList, VideoList, Novel
 from tqdm import tqdm
@@ -25,6 +27,8 @@ def create_resman_client():
 
 
 if __name__ == '__main__':
+    urllib3.disable_warnings()
+    logging.basicConfig(level=logging.INFO)
     mongo = create_mongodb_client()
     mc = create_s3_client()
     ic = create_resman_client()
