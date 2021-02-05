@@ -6,7 +6,6 @@ authors = ["Tsing Jyujing"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-tsingspider = "^1.4.4"
 m3u8 = "^0.7.1"
 Pillow = "^8.0.1"
 pymongo = "^3.11.0"
@@ -20,6 +19,7 @@ click = "^7.1.2"
 tqdm = "^4.51.0"
 ffmpeg-python = "^0.2.0"
 resman-client = "^1.1"
+tsingspider = "^1.4.6"
 
 [tool.poetry.dev-dependencies]
 

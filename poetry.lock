@@ -495,7 +495,7 @@ telegram = ["requests"]
 
 [[package]]
 name = "tsingspider"
-version = "1.4.4"
+version = "1.4.6"
 description = "A spider library of several data sources"
 category = "main"
 optional = false
@@ -562,7 +562,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "08927d70606444e4adab08f2127fa0b474d8eb5294faf70650ff84b5f0f8a11a"
+content-hash = "7dd93ce3f92a3a52f7d643eba1a9056b89a8b8c00b680f1ae0c18d128e9877ed"
 
 [metadata.files]
 amqp = [
@@ -924,8 +924,8 @@ tqdm = [
     {file = "tqdm-4.56.0.tar.gz", hash = "sha256:fe3d08dd00a526850568d542ff9de9bbc2a09a791da3c334f3213d8d0bbbca65"},
 ]
 tsingspider = [
-    {file = "tsingspider-1.4.4-py3-none-any.whl", hash = "sha256:6a2c4c88fd2158986f17fbbb6508b25be071d2e2259f08ddd309cb9f2c87af8e"},
-    {file = "tsingspider-1.4.4.tar.gz", hash = "sha256:2afe8a792d81f31ce31a9ba951bc4c16950e7fafe3185c01c29c05f9cddd4a9b"},
+    {file = "tsingspider-1.4.6-py3-none-any.whl", hash = "sha256:fe32197566ec1179ab35f361687bfffc0d2d900c8410caefbdb5c8012296029c"},
+    {file = "tsingspider-1.4.6.tar.gz", hash = "sha256:c66bd4a5b1f59891755863eb79863be5595ef5d87afb74e55b4bea8f1e32f01f"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
