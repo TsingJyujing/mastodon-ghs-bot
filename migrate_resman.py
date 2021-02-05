@@ -4,10 +4,10 @@ from mimetypes import guess_type
 from urllib.parse import urlparse, unquote_plus
 
 from bson.json_util import dumps
-from resman_client.client import ResmanClient, DefaultS3Image, ImageList, VideoList
+from resman_client.client import ResmanClient, DefaultS3Image, ImageList, VideoList, Novel
 from tqdm import tqdm
 
-from ghs.spiders.sex8 import IMAGE_THREADS, VIDEO_THREADS
+from ghs.spiders.sex8 import IMAGE_THREADS, VIDEO_THREADS, NOVEL_THREADS
 from ghs.utils.storage import create_mongodb_client, create_s3_client
 
 
@@ -72,4 +72,18 @@ if __name__ == '__main__':
             for s3_video in s3_video_list:
                 video_list.append_s3_video("spider", s3_video)
 
+        coll.update_one({"_id": _id}, {"$set": {"migrated": True}})
+
+    for doc in tqdm(list(coll.find({
+        "migrated": {"$ne": True},
+        "forum_id": {"$in": NOVEL_THREADS}
+    })), desc="Migrating novels"):
+        _id = doc["_id"]
+        ic.create_novel(
+            Novel(
+                title=doc["title"],
+                data=json.loads(dumps(doc)),
+            ),
+            doc["subject"]["content"]
+        )
         coll.update_one({"_id": _id}, {"$set": {"migrated": True}})

@@ -22,7 +22,7 @@ s3_client = create_s3_client()
 collection = mongodb_client.get_database("resman").get_collection("spider_sex8")
 
 IMAGE_THREADS = [157, 158, 11]
-NOVEL_THREADS = [279, 858]
+NOVEL_THREADS = [279]
 VIDEO_THREADS = [904, 181]
 
 
