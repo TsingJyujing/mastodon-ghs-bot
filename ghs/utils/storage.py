@@ -1,7 +1,7 @@
 import logging
 import os
 from io import BytesIO
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote_plus
 
 import pymongo
 from bson.json_util import dumps
@@ -31,8 +31,8 @@ def create_s3_client():
     parse_result = urlparse(os.environ["S3_URI"])
     mc = Minio(
         parse_result.hostname,
-        access_key=parse_result.username,
-        secret_key=parse_result.password,
+        access_key=unquote_plus(parse_result.username),
+        secret_key=unquote_plus(parse_result.password),
         secure=parse_result.scheme == "https"
     )
     if not mc.bucket_exists(bucket_name):
